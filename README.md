@@ -60,6 +60,29 @@ Why not rewrite?
 
 **Phase 3 (deferred):** Database profile switching. High risk. Extract after the other seams are stable.
 
+```mermaid
+flowchart LR
+    Monolith(["spring-music\nmonolith"])
+
+    subgraph p1["✅ Phase 1 — This Submission"]
+        direction TB
+        AlbumSvc["album-catalog\nNode.js/TS · full CRUD\n21 tests · ACL enforced"]
+        ReactUI["React 19 frontend\nreplaces AngularJS 1.2"]
+    end
+
+    subgraph p2["🔜 Phase 2 — Low Risk"]
+        direction TB
+        Health["health-info\nInfoController → Actuator"]
+        Errors["error-testing\nErrorController → test profile"]
+    end
+
+    subgraph p3["🔴 Phase 3 — Deferred"]
+        DB["database-profile-switch\nCfEnv coupling · zero tests\nhigh blast radius"]
+    end
+
+    Monolith --> p1 --> p2 --> p3
+```
+
 ---
 
 ## What We Built — All 9 Waypoints
@@ -107,44 +130,30 @@ cd scorecard && python3 eval.py --dry-run
 
 ## Architecture
 
-```
-                    ┌──────────────────────────────────────────┐
-                    │           LEGACY MONOLITH                 │
-                    │   spring-music-master (Spring Boot 2.4)   │
-                    │                                           │
-                    │  AlbumController → CrudRepository         │
-                    │  Album { albumId(dead), releaseYear:str } │
-                    │  AngularJS 1.2 SPA (being replaced)       │
-                    └────────────────┬─────────────────────────┘
-                                     │ still serves traffic
-                                     │ during migration
-                    ┌────────────────▼─────────────────────────┐
-                    │        STRANGLER PROXY (nginx)            │
-                    │  /albums → new service (after validation) │
-                    │  /* → monolith (everything else)          │
-                    └────────────────┬─────────────────────────┘
-                                     │
-              ┌──────────────────────▼──────────────────────┐
-              │         ANTI-CORRUPTION LAYER               │
-              │  PreToolUse hook: blocks albumId leakage    │
-              │  Contract tests: fail if ACL violated       │
-              │  ADR-002 defines the exact boundary         │
-              └──────────┬────────────────────┬────────────┘
-                         │                    │
-          ┌──────────────▼──────┐   ┌─────────▼──────────────┐
-          │   album-catalog     │   │   React 19 Frontend     │
-          │   (Node.js/TS)      │   │   (replaces AngularJS)  │
-          │                     │   │                         │
-          │  GET  /albums        │   │  src/types/album.ts     │
-          │  POST /albums        │   │  releaseYear: number    │
-          │  PUT  /albums/:id   │   │  no albumId anywhere    │
-          │  DELETE /albums/:id │   │  VITE_API_URL env var   │
-          │  GET  /health        │   └─────────────────────────┘
-          │                     │
-          │  releaseYear: number │  ← fixes monolith bug
-          │  no albumId field    │  ← drops dead field
-          │  404 on missing     │  ← fixes 200+null bug
-          └─────────────────────┘
+```mermaid
+flowchart TB
+    Browser(["🌐 Browser"])
+
+    subgraph docker["Docker Stack — ./start.sh"]
+        Frontend["project-phoenix\nReact 19 + Tailwind CSS\n:5173"]
+
+        Gateway["nginx · :80\nAPI Façade / Strangler Proxy\nrouting table = migration ledger"]
+
+        subgraph legacy["⚠️  Legacy Patient"]
+            Monolith["spring-music-master\nSpring Boot 2.4 · Java 11\nreleaseYear: String ✗\nalbumsId: null in JSON ✗\nAngularJS 1.2 SPA ✗"]
+        end
+
+        subgraph extracted["✅  Extracted Seam (Phase 1)"]
+            ACL{{"🛡️ Anti-Corruption Layer\nPreToolUse hook + contract tests\nblocks albumId · releaseYear:string"}}
+            Service["album-catalog · :3001\nNode.js + TypeScript\nreleaseYear: number ✓\nno albumId ✓\nproper 404s ✓\n21 tests green"]
+            ACL --> Service
+        end
+    end
+
+    Browser --> Frontend
+    Frontend -->|"API calls"| Gateway
+    Gateway -->|"/albums/*\n100% migrated"| ACL
+    Gateway -->|"/* all other routes"| Monolith
 ```
 
 ---
@@ -184,22 +193,27 @@ docker-compose up
 
 ## Test Strategy
 
-Three layers, each with a different job:
+Three independent layers, each with a different job:
 
-**1. Characterization Tests (The Pin) — `tests/characterization/`**
-Pin the monolith's current behavior before any change. Tests are written against bugs, not correctness. The `PINNED BUG` comments tell you exactly what the bug is. Run: `cd spring-music-master && ./gradlew test`
+```mermaid
+flowchart TB
+    subgraph pin["📌 Layer 1 — The Pin  (Characterization)"]
+        CharTest["AlbumControllerCharacterizationTest.java\nPins monolith behavior including its bugs\nPINNED BUG comments tell you what changed\nRun: cd spring-music-master && ./gradlew test"]
+    end
 
-**2. Contract Tests (The Fence) — `tests/contract/`**
-Fail loudly if the ACL is violated. Specifically:
-- `GET /albums` response must not contain `albumId` field
-- `releaseYear` in `GET /albums` response must be type `number`, not `string`
-Run: `cd services/album-catalog && npm test` (includes `tests/acl.test.ts`)
+    subgraph fence["🛡️ Layer 2 — The Fence  (Contract / ACL)"]
+        ContractTest["acl.test.ts · 7 tests\nFails loudly if albumId appears in GET /albums\nFails loudly if releaseYear is typeof string\nRun: cd services/album-catalog && npm test"]
+    end
 
-**3. Eval Harness (The Scorecard) — `scorecard/`**
-Scores Claude's own extraction proposals against a labeled golden set. Measures accuracy and false-confidence rate.
-Run: `cd scorecard && python3 eval.py`
+    subgraph scorecard["📊 Layer 3 — The Scorecard  (LLM Eval)"]
+        EvalHarness["eval.py · golden set of 6 labeled extractions\nMetrics: accuracy · false-confidence rate · behavior preservation\nRun: cd scorecard && python3 eval.py"]
+    end
 
-> **Test directory pointers:** The characterization tests run via `cd spring-music-master && ./gradlew test`. The ACL contract tests run via `cd services/album-catalog && npm test`. See `tests/characterization/README.md` and `tests/contract/README.md` for details.
+    pin -->|"monolith behavior locked"| fence
+    fence -->|"ACL boundary enforced"| scorecard
+```
+
+> **Where the tests actually live:** Characterization tests → `spring-music-master/src/test/…/AlbumControllerCharacterizationTest.java`. ACL contract tests → `services/album-catalog/tests/acl.test.ts`. See `tests/characterization/README.md` and `tests/contract/README.md` for pointers.
 
 ---
 
@@ -226,6 +240,20 @@ Run: `cd scorecard && python3 eval.py`
 | database-profile-switch | HIGH | CfEnv coupling, cross-cutting, zero tests | defer |
 
 Run `scouts/run_scouts.py` to get the AI-assisted risk ranking for comparison.
+
+```mermaid
+flowchart TB
+    Coordinator["🤖 Coordinator\nscouts/run_scouts.py\nasyncio + ThreadPoolExecutor"]
+
+    Coordinator -->|"explicit context"| S1["Scout: album-crud\nrisk: LOW ✅"]
+    Coordinator -->|"explicit context"| S2["Scout: health-info\nrisk: LOW"]
+    Coordinator -->|"explicit context"| S3["Scout: error-testing\nrisk: LOW"]
+    Coordinator -->|"explicit context"| S4["Scout: frontend-ui\nrisk: LOW"]
+    Coordinator -->|"explicit context"| S5["Scout: auth\nrisk: MEDIUM"]
+    Coordinator -->|"explicit context"| S6["Scout: db-profile-switch\nrisk: HIGH 🔴"]
+
+    S1 & S2 & S3 & S4 & S5 & S6 -->|"structured verdict"| Report["📋 Ranked extraction list\nscouts/LAST_RUN.md"]
+```
 
 ---
 
