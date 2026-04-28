@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/riccardo.perticarini/work/workshop/anthropic-local/hackton/.claude/hooks/acl_guard.py"
+          }
+        ]
+      }
+    ]
+  }
+}

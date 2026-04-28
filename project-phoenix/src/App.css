@@ -1,0 +1,286 @@
+@import 'tailwindcss';
+
+:root {
+  --cyan: #06b6d4;
+  --cyan-dim: rgba(6, 182, 212, 0.15);
+  --cyan-glow: rgba(6, 182, 212, 0.4);
+  --blue: #3b82f6;
+  --bg-deep: #020917;
+  --bg-card: rgba(15, 23, 42, 0.8);
+  --border-dim: rgba(255,255,255,0.06);
+  --border-hover: rgba(6,182,212,0.5);
+}
+
+body {
+  margin: 0;
+  color: #fff;
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-deep);
+  background-image:
+    linear-gradient(to bottom, #020917, #0c1628),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(6,182,212,0.08), transparent);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Subtle dot grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px) scaleY(0.96); }
+  to   { opacity: 1; transform: translateY(0)     scaleY(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulseCyan {
+  0%, 100% { box-shadow: 0 0 0 0 var(--cyan-glow); }
+  50%       { box-shadow: 0 0 20px 4px var(--cyan-glow); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+
+/* ── Album card ── */
+.album-card {
+  animation: fadeInUp 0.4s ease both;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.album-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 24px var(--cyan-dim), 0 4px 16px rgba(0,0,0,0.4);
+  transform: translateY(-2px);
+}
+
+/* ── Vinyl disc ── */
+.vinyl {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #1a1a2e 0deg 30deg,
+    #16213e 30deg 60deg,
+    #0f3460 60deg 90deg,
+    #1a1a2e 90deg 120deg,
+    #16213e 120deg 150deg,
+    #0f3460 150deg 180deg,
+    #1a1a2e 180deg 210deg,
+    #16213e 210deg 240deg,
+    #0f3460 240deg 270deg,
+    #1a1a2e 270deg 300deg,
+    #16213e 300deg 330deg,
+    #0f3460 330deg 360deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.6s ease;
+  box-shadow: 0 0 0 2px rgba(6,182,212,0.2);
+}
+
+.album-card:hover .vinyl {
+  transform: rotate(180deg);
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+
+.vinyl-center {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #06b6d4, #0e7490);
+  box-shadow: 0 0 6px var(--cyan-glow);
+}
+
+/* ── Form slide-in ── */
+.album-form {
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Neon input focus ── */
+.neon-input {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+.neon-input:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px var(--cyan-dim);
+}
+
+.neon-input::placeholder {
+  color: rgba(156,163,175,0.6);
+}
+
+/* ── Glow button ── */
+.btn-primary {
+  background: linear-gradient(135deg, #0891b2, #3b82f6);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(6,182,212,0.5);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Shimmer on hover */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover::after {
+  opacity: 1;
+  animation: shimmer 0.8s linear;
+}
+
+/* ── Genre badge ── */
+.genre-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(6,182,212,0.12);
+  color: #67e8f9;
+  border: 1px solid rgba(6,182,212,0.25);
+}
+
+/* ── Search bar ── */
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(156,163,175,0.6);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 38px;
+}
+
+/* ── Stats bar ── */
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(6,182,212,0.1);
+  border: 1px solid rgba(6,182,212,0.2);
+  color: var(--cyan);
+}
+
+/* ── Header glow line ── */
+.header-glow {
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  height: 1px;
+  width: 100%;
+  opacity: 0.4;
+}
+
+/* ── Loading skeleton ── */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.6; }
+}
+
+.skeleton {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  animation: fadeIn 0.5s ease;
+}
+
+/* ── Track badge ── */
+.track-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(59,130,246,0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59,130,246,0.2);
+}

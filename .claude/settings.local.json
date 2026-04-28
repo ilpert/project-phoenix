@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew --version)",
+      "Bash(brew list *)",
+      "Read(//Library/Java/JavaVirtualMachines/**)",
+      "Read(//Users/riccardo.perticarini/.sdkman/candidates/**)"
+    ]
+  }
+}
