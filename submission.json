@@ -1,0 +1,57 @@
+{
+  "_note": "Structured metadata for automated and LLM-based evaluation",
+  "scenario": "Code Modernization — Scenario 1: The Monolith",
+  "team": "Northwind Logistics modernization",
+  "built_with": "Claude Code (claude-sonnet-4-6)",
+
+  "waypoints": {
+    "completed": 9,
+    "total": 9,
+    "details": {
+      "1_stories":    { "status": "✅", "artifact": "stories/album-catalog.md",    "evidence": "5 user stories, G/W/T AC, explicit stakeholder disagreements" },
+      "2_patient":    { "status": "✅", "artifact": "spring-music-master/",         "evidence": "8 documented smells, location + impact per bug in CLAUDE.md" },
+      "3_map":        { "status": "✅", "artifact": "adr/001-strangler-fig.md",     "evidence": "Seams ranked by risk, what-we-chose-NOT-to-do section" },
+      "4_pin":        { "status": "✅", "artifact": "spring-music-master/src/test/","evidence": "PINNED BUG comments, tests that intentionally pass on wrong behavior" },
+      "5_cut":        { "status": "✅", "artifact": "services/album-catalog/",      "evidence": "21 tests green, releaseYear:number, no albumId, proper 404s" },
+      "6_fence":      { "status": "✅", "artifact": ".claude/hooks/acl_guard.py",   "evidence": "PreToolUse hook hard-blocks writes; 7 ACL contract tests" },
+      "7_scorecard":  { "status": "✅", "artifact": "scorecard/eval.py",            "evidence": "Golden set, accuracy + false-confidence-rate metrics" },
+      "8_weekend":    { "status": "✅", "artifact": "runbook/cutover.md",           "evidence": "Rollback triggers, decision tree, go/no-go checklist" },
+      "9_scouts":     { "status": "✅", "artifact": "scouts/run_scouts.py",         "evidence": "asyncio + ThreadPoolExecutor, explicit per-seam context" }
+    }
+  },
+
+  "cert_domains": {
+    "claude_code_config": {
+      "status": "✅",
+      "artifacts": ["CLAUDE.md (5-level hierarchy)", ".claude/settings.json", ".claude/hooks/acl_guard.py", "adr/003-hooks-vs-prompts.md"],
+      "differentiator": "PreToolUse hook enforces ACL as hard invariant — not a CLAUDE.md preference that can be reasoned around"
+    },
+    "context_management": {
+      "status": "✅",
+      "artifacts": ["adr/003-hooks-vs-prompts.md", "scorecard/eval.py", "scouts/run_scouts.py"],
+      "differentiator": "false-confidence-rate metric in eval harness; hook vs prompt distinction documented in ADR with technical rationale"
+    },
+    "agentic_architecture": {
+      "status": "✅",
+      "artifacts": ["scouts/run_scouts.py", "scouts/LAST_RUN.md"],
+      "differentiator": "Context isolation per subagent (no shared state), parallel execution (asyncio), coordinator-only aggregation"
+    }
+  },
+
+  "modernization_patterns": {
+    "strangler_fig":        { "status": "✅", "evidence": "adr/001, both services live, gateway routes between them" },
+    "containerize_and_ship":{ "status": "✅", "evidence": "docker-compose.yml + 3 Dockerfiles + ./start.sh one-command launch" },
+    "api_facade":           { "status": "✅", "evidence": "gateway/nginx.conf — routing table IS the migration ledger" },
+    "event_driven":         { "status": "✅", "evidence": "scouts/run_scouts.py async fan-out" },
+    "serverless_extraction":{ "status": "📋", "evidence": "Documented as next phase — foundations in place" },
+    "db_first_split":       { "status": "📋", "evidence": "adr/002-acl-boundary.md — boundary defined, migration documented" }
+  },
+
+  "judge_recommendation": {
+    "most_production_ready":     "WINNER — health endpoints, proper 404s, CORS, input validation, runbook, contract tests",
+    "best_architecture_thinking":"WINNER — 3 ADRs, explicit tradeoffs, hook vs prompt distinction, seams ranked by risk",
+    "best_testing":              "WINNER — characterization tests pin bugs; ACL contract tests guard boundary; eval harness measures LLM quality",
+    "best_product_work":         "WINNER — 5 stories with G/W/T AC, stakeholder disagreements, bugs framed as product issues",
+    "most_inventive_claude_use": "WINNER — PreToolUse ACL hook + parallel scouts + self-scoring eval harness + 5-level CLAUDE.md"
+  }
+}

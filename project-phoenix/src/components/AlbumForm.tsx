@@ -14,6 +14,15 @@ const EMPTY: AlbumRequest = {
 
 const GENRES = ['Rock', 'Pop', 'Jazz', 'Classical', 'Electronic', 'Hip-Hop', 'Country', 'Blues', 'R&B', 'Folk', 'Metal', 'Soul'];
 
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontSize: '0.6rem', fontWeight: 700,
+  letterSpacing: '0.1em', textTransform: 'uppercase',
+  color: '#b9cacb', marginBottom: '8px',
+  transition: 'color 0.2s',
+};
+
 export function AlbumForm({ album, onSaved, onCancel }: Props) {
   const [form, setForm] = useState<AlbumRequest>(
     album
@@ -60,115 +69,154 @@ export function AlbumForm({ album, onSaved, onCancel }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="album-form relative overflow-hidden" style={{
-      background: 'rgba(12, 22, 48, 0.9)',
-      border: '1px solid rgba(6,182,212,0.25)',
-      borderRadius: '16px',
-      padding: '24px',
-      backdropFilter: 'blur(12px)',
-      boxShadow: '0 0 40px rgba(6,182,212,0.08), 0 16px 48px rgba(0,0,0,0.4)',
-    }}>
-      {/* Accent line top */}
+    <form
+      onSubmit={handleSubmit}
+      className="album-form glass-card"
+      style={{ borderRadius: '12px', overflow: 'hidden', maxWidth: '860px' }}
+    >
+      {/* Accent line */}
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
-        background: 'linear-gradient(90deg, transparent, #06b6d4, transparent)',
-        opacity: 0.6,
+        height: '2px',
+        background: 'linear-gradient(90deg, transparent, #00f0ff, transparent)',
+        opacity: 0.7,
       }} />
 
-      <div className="flex items-center justify-between mb-6">
+      {/* Header */}
+      <div style={{
+        padding: '20px 28px', borderBottom: '1px solid rgba(255,255,255,0.05)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: 'rgba(25,27,38,0.5)',
+      }}>
         <div>
-          <div className="text-xs font-bold tracking-widest text-cyan-400/60 uppercase mb-1">
-            {album ? 'Edit Record' : 'New Record'}
+          <div style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em',
+            textTransform: 'uppercase', color: '#00dbe9', marginBottom: '4px',
+            textShadow: '0 0 8px rgba(0,240,255,0.5)',
+          }}>
+            {album ? 'MODIFY_RECORD' : 'INITIALIZE_ALBUM'}
           </div>
-          <h2 className="text-xl font-bold text-white">
-            {album ? album.title : 'Add to Catalog'}
+          <h2 style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '1.25rem', fontWeight: 600, color: '#e1e1f0',
+            margin: 0, lineHeight: 1.3,
+          }}>
+            {album ? album.title : 'Enter media coordinates into the core'}
           </h2>
         </div>
-        <button type="button" onClick={onCancel} style={{
-          width: '32px', height: '32px', borderRadius: '50%',
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          color: 'rgba(156,163,175,0.8)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '18px', lineHeight: 1, transition: 'all 0.2s',
-        }}>×</button>
+        <button
+          type="button" onClick={onCancel}
+          style={{
+            width: '36px', height: '36px', borderRadius: '50%',
+            background: 'rgba(50,52,64,0.5)', border: '1px solid rgba(255,255,255,0.08)',
+            color: '#849495', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.2s', flexShrink: 0,
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+        </button>
       </div>
 
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'rgba(156,163,175,0.8)', marginBottom: '6px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Title
-            </label>
-            <input type="text" value={form.title} onChange={set('title')} placeholder="Album title" className="neon-input" />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'rgba(156,163,175,0.8)', marginBottom: '6px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Artist
-            </label>
-            <input type="text" value={form.artist} onChange={set('artist')} placeholder="Artist name" className="neon-input" />
-          </div>
+      {/* Form body */}
+      <div style={{ padding: '28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px 48px' }}>
+        {/* Title */}
+        <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid #3b494b', paddingBottom: '8px', transition: 'all 0.2s' }}>
+          <label style={labelStyle}>ALBUM_TITLE</label>
+          <input
+            type="text" value={form.title} onChange={set('title')}
+            placeholder="e.g. In Rainbows"
+            className="neon-input"
+          />
         </div>
 
-        <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'rgba(156,163,175,0.8)', marginBottom: '6px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Year
-            </label>
-            <input type="number" value={form.releaseYear} onChange={set('releaseYear')} min={1900} max={2025} className="neon-input" />
+        {/* Artist */}
+        <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid #3b494b', paddingBottom: '8px' }}>
+          <label style={labelStyle}>ARTIST_ENTITY</label>
+          <input
+            type="text" value={form.artist} onChange={set('artist')}
+            placeholder="e.g. Radiohead"
+            className="neon-input"
+          />
+        </div>
+
+        {/* Genre */}
+        <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid #3b494b', paddingBottom: '8px' }}>
+          <label style={labelStyle}>GENRE_CLASSIFICATION</label>
+          <select value={form.genre} onChange={set('genre')} className="neon-input">
+            <option value="">Select</option>
+            {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
+          </select>
+        </div>
+
+        {/* Year + Tracks side by side */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid #3b494b', paddingBottom: '8px' }}>
+            <label style={labelStyle}>CYCLE_YEAR</label>
+            <input
+              type="number" value={form.releaseYear} onChange={set('releaseYear')}
+              min={1900} max={2025} placeholder="2007"
+              className="neon-input"
+            />
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'rgba(156,163,175,0.8)', marginBottom: '6px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Tracks
-            </label>
-            <input type="number" value={form.trackCount} onChange={set('trackCount')} min={0} className="neon-input" />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'rgba(156,163,175,0.8)', marginBottom: '6px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Genre
-            </label>
-            <select value={form.genre} onChange={set('genre')} className="neon-input" style={{ cursor: 'pointer' }}>
-              <option value="">Pick genre</option>
-              {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
+          <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid #3b494b', paddingBottom: '8px' }}>
+            <label style={labelStyle}>TRACK_COUNT</label>
+            <input
+              type="number" value={form.trackCount} onChange={set('trackCount')}
+              min={0} placeholder="12"
+              className="neon-input"
+            />
           </div>
         </div>
       </div>
 
+      {/* Error */}
       {error && (
         <div style={{
-          marginTop: '16px', padding: '10px 14px', borderRadius: '8px',
-          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+          margin: '0 28px 16px',
+          padding: '10px 16px', borderRadius: '4px',
+          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+          fontFamily: "'Spline Sans', sans-serif",
           color: '#fca5a5', fontSize: '0.875rem',
         }}>
           {error}
         </div>
       )}
 
-      <div className="flex items-center gap-3 mt-6">
-        <button type="submit" disabled={saving} className="btn-primary">
-          {saving ? (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ animation: 'spin-slow 0.8s linear infinite' }}>
-                <circle cx="7" cy="7" r="5.5" stroke="white" strokeWidth="2" strokeDasharray="20 15" />
-              </svg>
-              Saving…
-            </span>
-          ) : album ? 'Save Changes' : 'Add to Catalog'}
-        </button>
+      {/* Footer */}
+      <div style={{
+        padding: '16px 28px 24px',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(12,14,24,0.6)',
+        display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px',
+      }}>
         <button
-          type="button"
-          onClick={onCancel}
+          type="button" onClick={onCancel}
           style={{
-            padding: '8px 20px', borderRadius: '8px',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: 'rgba(156,163,175,0.8)',
-            fontSize: '0.875rem', cursor: 'pointer',
-            transition: 'all 0.2s',
+            padding: '10px 24px', borderRadius: '2px',
+            background: 'transparent', border: 'none',
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em',
+            textTransform: 'uppercase', color: '#849495',
+            cursor: 'pointer', transition: 'color 0.2s',
           }}
         >
-          Cancel
+          Abort Sequence
+        </button>
+        <button type="submit" disabled={saving} className="btn-primary">
+          {saving ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ animation: 'spin-slow 0.8s linear infinite' }}>
+                <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="2" strokeDasharray="20 15" />
+              </svg>
+              Saving…
+            </>
+          ) : (
+            <>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>data_saver_on</span>
+              {album ? 'Commit Changes' : 'Commit to Archive'}
+            </>
+          )}
         </button>
       </div>
     </form>

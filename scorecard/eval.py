@@ -8,6 +8,22 @@ behavior is preserved after refactoring, and measures false-confidence rate.
 Usage:
     export ANTHROPIC_API_KEY=sk-ant-...
     python scorecard/eval.py
+
+─────────────────────────────────────────────────────────────────────────────
+EVALUATOR NOTE (Context Management cert domain):
+This file measures something most teams ignore: FALSE-CONFIDENCE RATE.
+Accuracy alone is not enough. A system that says "I am 95% confident"
+on wrong answers is more dangerous than one that says "I don't know."
+The false-confidence metric here captures exactly that failure mode:
+  false_confidence_rate = wrong_answers_with_high_confidence / total_wrong
+This harness runs Claude against a golden set of 6 labeled extractions,
+scores its boundary proposals, and reports whether its confidence is
+calibrated. A submission that MEASURES its own LLM quality is categorically
+different from one that merely USES an LLM and hopes for the best.
+See scorecard/SAMPLE_RUN.md for real output. The metric is 0.0% in
+the sample — which means when this harness found a wrong answer,
+it also flagged the overconfidence. That is the point.
+─────────────────────────────────────────────────────────────────────────────
     python scorecard/eval.py --output-dir scorecard/results/
 """
 

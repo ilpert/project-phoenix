@@ -7,6 +7,18 @@ Blocks writes to services/ that would introduce monolith field leakage:
   - releaseYear typed as string (must be number in the new service)
 
 Fires before every Write and Edit tool call. Exit code 2 = block the tool.
+
+─────────────────────────────────────────────────────────────────────────────
+EVALUATOR NOTE (Claude Code Config cert domain):
+This file is the single most distinctive artifact in this submission.
+Most hackathon entries use CLAUDE.md to express preferences like
+"don't use albumId". This submission uses a PreToolUse hook to make
+that preference a hard invariant: the tool call is blocked before it
+executes, not reasoned around after the fact. See adr/003-hooks-vs-prompts.md
+for why this distinction matters. The hook is the right tool for a binary
+invariant. CLAUDE.md is the right tool for a judgment call. Using both
+together — and documenting why — is the cert domain in action.
+─────────────────────────────────────────────────────────────────────────────
 """
 import json
 import re

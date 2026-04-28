@@ -2,39 +2,62 @@ import { useState, useEffect } from 'react';
 import { albumsApi } from '../api/albums';
 import type { Album } from '../types/album';
 
-const GENRE_COLORS: Record<string, string> = {
-  rock: 'rgba(239,68,68,0.15)',
-  pop: 'rgba(168,85,247,0.15)',
-  jazz: 'rgba(245,158,11,0.15)',
-  classical: 'rgba(16,185,129,0.15)',
-  electronic: 'rgba(6,182,212,0.15)',
-  'hip-hop': 'rgba(251,113,133,0.15)',
-  country: 'rgba(234,179,8,0.15)',
-  blues: 'rgba(99,102,241,0.15)',
+const GENRE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+  rock:       { bg: 'rgba(239,68,68,0.1)',    color: '#fca5a5', border: 'rgba(239,68,68,0.25)' },
+  pop:        { bg: 'rgba(168,85,247,0.1)',   color: '#d8b4fe', border: 'rgba(168,85,247,0.25)' },
+  jazz:       { bg: 'rgba(245,158,11,0.1)',   color: '#fcd34d', border: 'rgba(245,158,11,0.25)' },
+  classical:  { bg: 'rgba(16,185,129,0.1)',   color: '#6ee7b7', border: 'rgba(16,185,129,0.25)' },
+  electronic: { bg: 'rgba(0,240,255,0.1)',    color: '#7df4ff', border: 'rgba(0,240,255,0.2)' },
+  'hip-hop':  { bg: 'rgba(251,113,133,0.1)',  color: '#fda4af', border: 'rgba(251,113,133,0.25)' },
+  country:    { bg: 'rgba(234,179,8,0.1)',    color: '#fde047', border: 'rgba(234,179,8,0.25)' },
+  blues:      { bg: 'rgba(99,102,241,0.1)',   color: '#a5b4fc', border: 'rgba(99,102,241,0.25)' },
 };
 
 function genreStyle(genre: string) {
   const key = genre.toLowerCase();
-  const bg = GENRE_COLORS[key] ?? 'rgba(107,114,128,0.15)';
-  return { background: bg };
-}
-
-function Vinyl() {
-  return (
-    <div className="vinyl">
-      <div className="vinyl-center" />
-    </div>
-  );
+  return GENRE_COLORS[key] ?? { bg: 'rgba(107,114,128,0.1)', color: '#9ca3af', border: 'rgba(107,114,128,0.25)' };
 }
 
 function SkeletonCard() {
   return (
-    <div className="flex items-center gap-4 p-4 rounded-xl border border-white/5">
-      <div className="skeleton w-12 h-12 rounded-full flex-shrink-0" />
-      <div className="flex-1 space-y-2">
-        <div className="skeleton h-4 rounded w-1/3" />
-        <div className="skeleton h-3 rounded w-1/2" />
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '16px',
+      padding: '16px 20px', borderRadius: '12px',
+      background: 'rgba(27,27,31,0.4)',
+      borderTop: '1px solid rgba(255,255,255,0.06)',
+      borderLeft: '1px solid rgba(255,255,255,0.06)',
+      borderRight: '1px solid rgba(0,0,0,0.2)',
+      borderBottom: '1px solid rgba(0,0,0,0.2)',
+    }}>
+      <div className="skeleton" style={{ width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0 }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="skeleton" style={{ height: '14px', width: '35%' }} />
+        <div className="skeleton" style={{ height: '11px', width: '55%' }} />
       </div>
+    </div>
+  );
+}
+
+function VinylDisc() {
+  return (
+    <div style={{
+      width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+      background: `conic-gradient(
+        from 0deg,
+        #1a1a2e 0deg 30deg, #16213e 30deg 60deg, #0f3460 60deg 90deg,
+        #1a1a2e 90deg 120deg, #16213e 120deg 150deg, #0f3460 150deg 180deg,
+        #1a1a2e 180deg 210deg, #16213e 210deg 240deg, #0f3460 240deg 270deg,
+        #1a1a2e 270deg 300deg, #16213e 300deg 330deg, #0f3460 330deg 360deg
+      )`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 0 0 2px rgba(0,240,255,0.15)',
+      transition: 'transform 0.6s ease, box-shadow 0.3s ease',
+    }}>
+      <div style={{
+        width: '12px', height: '12px', borderRadius: '50%',
+        background: 'radial-gradient(circle, #00dbe9, #006970)',
+        boxShadow: '0 0 6px rgba(0,240,255,0.5)',
+      }} />
     </div>
   );
 }
@@ -48,54 +71,91 @@ interface AlbumCardProps {
 
 function AlbumCard({ album, index, onDelete, onEdit }: AlbumCardProps) {
   const [confirming, setConfirming] = useState(false);
-
-  const handleDelete = () => {
-    if (!confirming) { setConfirming(true); return; }
-    onDelete(album.id);
-  };
+  const gStyle = genreStyle(album.genre);
 
   return (
     <div
-      className="album-card flex items-center gap-4 p-4"
-      style={{ animationDelay: `${index * 55}ms` }}
+      className="album-card glass-panel"
+      style={{
+        display: 'flex', alignItems: 'center', gap: '16px',
+        padding: '14px 20px', borderRadius: '10px',
+        animationDelay: `${index * 55}ms`,
+      }}
     >
-      <Vinyl />
+      <VinylDisc />
 
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold text-white truncate leading-tight">{album.title}</div>
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="text-sm text-gray-400">{album.artist}</span>
-          <span className="text-gray-600">·</span>
-          <span className="text-sm font-mono text-cyan-400">{album.releaseYear}</span>
-          <span className="text-gray-600">·</span>
-          <span className="genre-badge" style={genreStyle(album.genre)}>{album.genre}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontWeight: 600, color: '#e1e1f0',
+          fontSize: '0.95rem', lineHeight: 1.3,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {album.title}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: "'Spline Sans', sans-serif", fontSize: '0.8rem', color: '#b9cacb' }}>
+            {album.artist}
+          </span>
+          <span style={{ color: '#3b494b', fontSize: '0.7rem' }}>·</span>
+          <span style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '0.75rem', fontWeight: 600, color: '#00dbe9',
+            letterSpacing: '0.02em',
+          }}>
+            {album.releaseYear}
+          </span>
+          <span style={{ color: '#3b494b', fontSize: '0.7rem' }}>·</span>
+          <span className="genre-badge" style={{
+            background: gStyle.bg, color: gStyle.color, borderColor: gStyle.border,
+          }}>
+            {album.genre}
+          </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 flex-shrink-0">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
         <span className="track-badge">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-            <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-            <circle cx="5" cy="5" r="1.5"/>
-          </svg>
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>album</span>
           {album.trackCount}
         </span>
 
         <button
           onClick={() => onEdit(album)}
-          className="text-xs text-gray-500 hover:text-cyan-400 transition-colors px-2 py-1 rounded hover:bg-cyan-400/10"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em',
+            textTransform: 'uppercase', color: 'rgba(82,82,91,1)',
+            padding: '4px 10px', borderRadius: '2px',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => {
+            (e.target as HTMLButtonElement).style.color = '#00dbe9';
+            (e.target as HTMLButtonElement).style.background = 'rgba(0,219,233,0.08)';
+          }}
+          onMouseLeave={e => {
+            (e.target as HTMLButtonElement).style.color = 'rgba(82,82,91,1)';
+            (e.target as HTMLButtonElement).style.background = 'none';
+          }}
         >
           Edit
         </button>
 
         <button
-          onClick={handleDelete}
+          onClick={() => { if (!confirming) { setConfirming(true); } else { onDelete(album.id); } }}
           onBlur={() => setConfirming(false)}
-          className={`text-xs px-2 py-1 rounded transition-all ${
-            confirming
-              ? 'bg-red-500/20 text-red-400 border border-red-500/40'
-              : 'text-gray-600 hover:text-red-400 hover:bg-red-500/10'
-          }`}
+          style={{
+            background: confirming ? 'rgba(239,68,68,0.12)' : 'none',
+            border: confirming ? '1px solid rgba(239,68,68,0.35)' : '1px solid transparent',
+            cursor: 'pointer',
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: confirming ? '#fca5a5' : 'rgba(82,82,91,1)',
+            padding: '4px 10px', borderRadius: '2px',
+            transition: 'all 0.2s',
+          }}
         >
           {confirming ? 'Confirm?' : 'Delete'}
         </button>
@@ -135,57 +195,74 @@ export function AlbumList({ onEdit }: Props) {
 
   return (
     <div>
-      {/* Search + stats row */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="search-wrapper flex-1">
+      {/* Search + stats */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+        <div className="search-wrapper" style={{ flex: 1 }}>
           <span className="search-icon">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="8.5" cy="8.5" r="5.75"/>
-              <path d="M13.25 13.25L17 17"/>
-            </svg>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>search</span>
           </span>
           <input
             type="text"
-            placeholder="Search by title, artist, or genre…"
+            placeholder="Query archive…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="neon-input search-input"
+            className="search-input"
           />
         </div>
         {!loading && (
-          <div className="stat-pill">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-              <circle cx="6" cy="6" r="2"/>
-            </svg>
+          <span className="stat-pill">
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>album</span>
             {albums.length} {albums.length === 1 ? 'album' : 'albums'}
-          </div>
+          </span>
         )}
+      </div>
+
+      {/* Section heading */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '12px',
+        marginBottom: '16px', paddingLeft: '8px',
+        borderLeft: '2px solid #00f0ff',
+      }}>
+        <span style={{
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em',
+          textTransform: 'uppercase', color: '#b9cacb',
+        }}>
+          Recent Archives
+        </span>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="space-y-3">
-          {[0,1,2,3].map(i => <SkeletonCard key={i} />)}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {[0, 1, 2, 3].map(i => <SkeletonCard key={i} />)}
         </div>
       ) : error ? (
-        <div className="empty-state text-center py-16">
-          <div className="text-4xl mb-4">⚠️</div>
-          <div className="text-red-400 font-medium">{error}</div>
-          <div className="text-gray-600 text-sm mt-1">Check that the album-catalog service is running on port 3001</div>
+        <div className="empty-state" style={{ textAlign: 'center', padding: '64px 0' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#849495', marginBottom: '16px', display: 'block' }}>
+            signal_disconnected
+          </span>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: '#ffb4ab', fontWeight: 600, marginBottom: '6px' }}>
+            {error}
+          </div>
+          <div style={{ fontFamily: "'Spline Sans', sans-serif", color: '#849495', fontSize: '0.875rem' }}>
+            Check that the album-catalog service is running on port 3001
+          </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state text-center py-16">
-          <div className="text-5xl mb-4 opacity-30">💿</div>
-          <div className="text-gray-400 font-medium">
+        <div className="empty-state" style={{ textAlign: 'center', padding: '64px 0' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '56px', color: '#3b494b', marginBottom: '16px', display: 'block' }}>
+            album
+          </span>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: '#b9cacb', fontWeight: 600, marginBottom: '6px' }}>
             {search ? `No albums match "${search}"` : 'No albums yet'}
           </div>
-          <div className="text-gray-600 text-sm mt-1">
-            {search ? 'Try a different search term' : 'Hit "+ Add Album" to get started'}
+          <div style={{ fontFamily: "'Spline Sans', sans-serif", color: '#849495', fontSize: '0.875rem' }}>
+            {search ? 'Try a different search term' : 'Hit "Add Album" to initialize the archive'}
           </div>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {filtered.map((album, i) => (
             <AlbumCard
               key={album.id}

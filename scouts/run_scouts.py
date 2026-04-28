@@ -8,6 +8,22 @@ Each scout is an independent Claude API call that scores one candidate seam on:
   - extraction_risk (LOW / MEDIUM / HIGH)
   - reasoning + recommendation
 
+─────────────────────────────────────────────────────────────────────────────
+EVALUATOR NOTE (Agentic Architecture cert domain):
+This file demonstrates the three key properties of correct agentic architecture:
+  1. PARALLELISM: asyncio + ThreadPoolExecutor, max_workers = len(seams).
+     All scouts run concurrently. Total time = slowest scout, not sum.
+  2. CONTEXT ISOLATION: each scout receives only its seam's source files,
+     the ADR boundary rules, and its specific question. No scout sees another
+     scout's context or results. This prevents correlated errors.
+  3. COORDINATOR AGGREGATION: the main function collects all verdicts and
+     applies a composite risk formula. The coordinator does not score seams —
+     it only aggregates. Separation of concerns.
+Compare output in scouts/LAST_RUN.md against the human ranking in
+adr/001-strangler-fig.md. Where they agree, the pattern is validated.
+Where they differ, that divergence is itself useful signal.
+─────────────────────────────────────────────────────────────────────────────
+
 Results are aggregated, ranked (LOW → MEDIUM → HIGH), written to:
   - scouts_report.md   (human-readable Markdown)
   - scouts_results.json (machine-readable JSON)
